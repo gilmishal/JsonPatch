@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.JsonPatch
     /// </summary>
     public class JsonPatchError
     {
+        private Action<JsonPatchError> logErrorAction;
+
         /// <summary>
         /// Initializes a new instance of <see cref="JsonPatchError"/>.
         /// </summary>
@@ -30,6 +32,11 @@ namespace Microsoft.AspNetCore.JsonPatch
             AffectedObject = affectedObject;
             Operation = operation;
             ErrorMessage = errorMessage;
+        }
+
+        public JsonPatchError(object affectedObject, Operation operation, string errorMessage, Action<JsonPatchError> logErrorAction) : this(affectedObject, operation, errorMessage)
+        {
+            this.logErrorAction = logErrorAction;
         }
 
         /// <summary>

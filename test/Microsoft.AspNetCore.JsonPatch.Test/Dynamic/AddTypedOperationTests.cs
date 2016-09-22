@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 {
     public class AddTypedOperationTests
     {
+        private readonly string OutOfBoundsIndexErrorMessageFormat =
+            "For operation '{0}' on array property at path '{1}', the index is out of bounds of the array size.";
+
         [Fact]
         public void AddToListNegativePosition()
         {
@@ -30,7 +33,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'add' on array property at path '/IntegerList/-1', the index is negative.",
+               string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/IntegerList/-1"),
                 exception.Message);
         }
 
@@ -85,7 +88,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/ListOfSimpleDTO/-1/IntegerList/0' could not be added.",
+                string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/ListOfSimpleDTO/-1/IntegerList/0"),
                 exception.Message);
         }
 
@@ -114,7 +117,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/ListOfSimpleDTO/20/IntegerList/0' could not be added.",
+                string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/ListOfSimpleDTO/20/IntegerList/0"),
                 exception.Message);
         }
     }

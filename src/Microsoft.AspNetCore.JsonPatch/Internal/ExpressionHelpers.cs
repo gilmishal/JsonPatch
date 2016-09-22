@@ -8,9 +8,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.JsonPatch.Helpers
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    internal static class ExpressionHelpers
+    public static class ExpressionHelpers
     {
         public static string GetPath<TModel, TProp>(Expression<Func<TModel, TProp>> expr) where TModel : class
         {
