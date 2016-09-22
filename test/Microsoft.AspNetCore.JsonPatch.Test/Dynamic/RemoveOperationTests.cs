@@ -11,6 +11,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 {
     public class RemoveOperationTests
     {
+        private readonly string OutOfBoundsIndexErrorMessageFormat =
+            "For operation '{0}' on array property at path '{1}', the index is out of bounds of the array size.";
+
         [Fact]
         public void RemovePropertyShouldFailIfRootIsAnonymous()
         {
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/NonExisting' could not be removed.",
+                string.Format("The '{0}' operation at path '{1}' could not be performed.", "remove", "/NonExisting"),
                 exception.Message);
         }
 
@@ -250,7 +253,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/3', the index is larger than the array size.",
+               string.Format(OutOfBoundsIndexErrorMessageFormat, "remove", "/SimpleDTO/IntegerList/3"),
                 exception.Message);
         }
 
@@ -275,8 +278,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-               "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/-1', the index is negative.",
-                exception.Message);
+               string.Format(OutOfBoundsIndexErrorMessageFormat, "remove", "/SimpleDTO/IntegerList/-1"),
+               exception.Message);
         }
 
         [Fact]

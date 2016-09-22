@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq.Expressions;
 
-namespace Microsoft.AspNetCore.JsonPatch.Helpers
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     internal static class ExpressionHelpers
     {

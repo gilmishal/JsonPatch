@@ -12,6 +12,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 {
     public class AddOperationTests
     {
+        private readonly string OutOfBoundsIndexErrorMessageFormat =
+            "For operation '{0}' on array property at path '{1}', the index is out of bounds of the array size.";
+
+        private readonly string CannotPerformOperationErrorMessageFormat =
+            "The '{0}' operation at path '{1}' could not be performed.";
+
         [Fact]
         public void AddNewPropertyShouldFailIfRootIsNotAnExpandoObject()
         {
@@ -32,7 +38,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/NewInt' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/NewInt"),
                 exception.Message);
         }
 
@@ -76,7 +82,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/Nested/NewInt' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/Nested/NewInt"),
                 exception.Message);
         }
 
@@ -101,7 +107,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/Nested/NewInt' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/Nested/NewInt"),
                 exception.Message);
         }
 
@@ -214,7 +220,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/ComplexProperty' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/ComplexProperty"),
                 exception.Message);
         }
 
@@ -238,7 +244,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/StringProperty' could not be updated.",
+                string.Format("The property at path '{0}' could not be updated.", "/StringProperty"),
                 exception.Message);
         }
 
@@ -336,7 +342,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/DynamicProperty/OtherProperty/IntProperty' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/DynamicProperty/OtherProperty/IntProperty"),
                 exception.Message);
         }
 
@@ -374,7 +380,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "The property at path '/baz/bat' could not be added.",
+                string.Format(CannotPerformOperationErrorMessageFormat, "add", "/baz/bat"),
                 exception.Message);
         }
 
@@ -434,7 +440,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/-1', the index is negative.",
+                string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/IntegerList/-1"),
                 exception.Message);
         }
 
@@ -478,7 +484,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/4', the index is larger than the array size.",
+                string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/IntegerList/4"),
                 exception.Message);
         }
 
@@ -542,7 +548,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 deserialized.ApplyTo(doc);
             });
             Assert.Equal(
-                "For operation 'add' on array property at path '/IntegerList/-1', the index is negative.",
+                string.Format(OutOfBoundsIndexErrorMessageFormat, "add", "/IntegerList/-1"),
                 exception.Message);
         }
 

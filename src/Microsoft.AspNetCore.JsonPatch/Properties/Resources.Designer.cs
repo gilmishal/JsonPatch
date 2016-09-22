@@ -27,6 +27,22 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
+        /// The '{0}' operation at path '{1}' could not be performed.
+        /// </summary>
+        internal static string CannotPerformOperation
+        {
+            get { return GetString("CannotPerformOperation"); }
+        }
+
+        /// <summary>
+        /// The '{0}' operation at path '{1}' could not be performed.
+        /// </summary>
+        internal static string FormatCannotPerformOperation(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("CannotPerformOperation"), p0, p1);
+        }
+
+        /// <summary>
         /// The property at '{0}' could not be read.
         /// </summary>
         internal static string CannotReadProperty
@@ -75,7 +91,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// For operation '{0}' on array property at path '{1}', the index is larger than the array size.
+        /// For operation '{0}' on array property at path '{1}', the index is out of bounds of the array size.
         /// </summary>
         internal static string InvalidIndexForArrayProperty
         {
@@ -83,7 +99,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// For operation '{0}' on array property at path '{1}', the index is larger than the array size.
+        /// For operation '{0}' on array property at path '{1}', the index is out of bounds of the array size.
         /// </summary>
         internal static string FormatInvalidIndexForArrayProperty(object p0, object p1)
         {
@@ -155,22 +171,6 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// For operation '{0}' on array property at path '{1}', the index is negative.
-        /// </summary>
-        internal static string NegativeIndexForArrayProperty
-        {
-            get { return GetString("NegativeIndexForArrayProperty"); }
-        }
-
-        /// <summary>
-        /// For operation '{0}' on array property at path '{1}', the index is negative.
-        /// </summary>
-        internal static string FormatNegativeIndexForArrayProperty(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NegativeIndexForArrayProperty"), p0, p1);
-        }
-
-        /// <summary>
         /// '{0}' must be of type '{1}'.
         /// </summary>
         internal static string ParameterMustMatchType
@@ -184,38 +184,6 @@ namespace Microsoft.AspNetCore.JsonPatch
         internal static string FormatParameterMustMatchType(object p0, object p1)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("ParameterMustMatchType"), p0, p1);
-        }
-
-        /// <summary>
-        /// The property at path '{0}' could not be added.
-        /// </summary>
-        internal static string PropertyCannotBeAdded
-        {
-            get { return GetString("PropertyCannotBeAdded"); }
-        }
-
-        /// <summary>
-        /// The property at path '{0}' could not be added.
-        /// </summary>
-        internal static string FormatPropertyCannotBeAdded(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyCannotBeAdded"), p0);
-        }
-
-        /// <summary>
-        /// The property at path '{0}' could not be removed.
-        /// </summary>
-        internal static string PropertyCannotBeRemoved
-        {
-            get { return GetString("PropertyCannotBeRemoved"); }
-        }
-
-        /// <summary>
-        /// The property at path '{0}' could not be removed.
-        /// </summary>
-        internal static string FormatPropertyCannotBeRemoved(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyCannotBeRemoved"), p0);
         }
 
         /// <summary>
