@@ -126,55 +126,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(expected, targetObject);
         }
 
-        [Fact]
-        public void Replace_ReplacesValue_AtTheEnd()
-        {
-            // Arrange
-            var targetObject = new List<int>() { 10, 20 };
-            var operation = new Operation("add", "/Numbers/-", from: null);
-            var pathListObject = GetpathListObject(targetObject, "-", operation);
-
-            // Act
-            pathListObject.Replace(30);
-
-            // Assert
-            Assert.Equal(new List<int>() { 10, 30 }, targetObject);
-        }
-
-        public static TheoryData<string, List<int>> ReplacesValuesAtPositionData
-        {
-            get
-            {
-                return new TheoryData<string, List<int>>()
-                {
-                    {
-                        "0",
-                        new List<int>() { 30, 20 }
-                    },
-                    {
-                        "1",
-                        new List<int>() { 10, 30 }
-                    }
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ReplacesValuesAtPositionData))]
-        public void Replace_ReplacesValue_AtGivenPosition(string position, List<int> expected)
-        {
-            // Arrange
-            var targetObject = new List<int>() { 10, 20 };
-            var operation = new Operation("add", "/Numbers/-", from: null);
-            var pathListObject = GetpathListObject(targetObject, position, operation);
-
-            // Act
-            pathListObject.Replace(30);
-
-            // Assert
-            Assert.Equal(expected, targetObject);
-        }
-
         [Fact(Skip = "probably should be done at a higher level where we provided raw serialization format")]
         public void Add_DefaultsToTheListType_IfNotDataProvided()
         {
@@ -208,24 +159,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 pathListObject.Add("Mike");
-            });
-
-            Assert.Equal($"The value 'Mike' is invalid for property at path '{operation.path}'.", exception.Message);
-        }
-
-        [Fact]
-        public void Replace_NonCompatibleType_FailsWithException()
-        {
-            // Arrange
-            var targetObject = new List<int>() { 10, 20 };
-            var operation = new Operation("add", "/Numbers/-", from: null);
-            var pathListObject = GetpathListObject(targetObject, "-", operation);
-
-            // Act & Assert
-
-            var exception = Assert.Throws<JsonPatchException>(() =>
-            {
-                pathListObject.Replace("Mike");
             });
 
             Assert.Equal($"The value 'Mike' is invalid for property at path '{operation.path}'.", exception.Message);
@@ -277,6 +210,73 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.Equal(expected.Count, targetObject.Count);
+            Assert.Equal(expected, targetObject);
+        }
+
+        [Fact]
+        public void Replace_NonCompatibleType_FailsWithException()
+        {
+            // Arrange
+            var targetObject = new List<int>() { 10, 20 };
+            var operation = new Operation("add", "/Numbers/-", from: null);
+            var pathListObject = GetpathListObject(targetObject, "-", operation);
+
+            // Act & Assert
+
+            var exception = Assert.Throws<JsonPatchException>(() =>
+            {
+                pathListObject.Replace("Mike");
+            });
+
+            Assert.Equal($"The value 'Mike' is invalid for property at path '{operation.path}'.", exception.Message);
+        }
+
+        [Fact]
+        public void Replace_ReplacesValue_AtTheEnd()
+        {
+            // Arrange
+            var targetObject = new List<int>() { 10, 20 };
+            var operation = new Operation("add", "/Numbers/-", from: null);
+            var pathListObject = GetpathListObject(targetObject, "-", operation);
+
+            // Act
+            pathListObject.Replace(30);
+
+            // Assert
+            Assert.Equal(new List<int>() { 10, 30 }, targetObject);
+        }
+
+        public static TheoryData<string, List<int>> ReplacesValuesAtPositionData
+        {
+            get
+            {
+                return new TheoryData<string, List<int>>()
+                {
+                    {
+                        "0",
+                        new List<int>() { 30, 20 }
+                    },
+                    {
+                        "1",
+                        new List<int>() { 10, 30 }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ReplacesValuesAtPositionData))]
+        public void Replace_ReplacesValue_AtGivenPosition(string position, List<int> expected)
+        {
+            // Arrange
+            var targetObject = new List<int>() { 10, 20 };
+            var operation = new Operation("add", "/Numbers/-", from: null);
+            var pathListObject = GetpathListObject(targetObject, position, operation);
+
+            // Act
+            pathListObject.Replace(30);
+
+            // Assert
             Assert.Equal(expected, targetObject);
         }
 

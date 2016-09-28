@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class PatchDictionaryObjectTest
     {
+        [Fact(Skip = "todo")]
+        public void NonStringKey()
+        {
+        }
+
         [Fact]
         public void Add_KeyWhichAlreadyExists_ReplacesExistingValue()
         {
@@ -38,6 +43,44 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Assert
             Assert.Equal(1, dictionary.Count);
             Assert.Equal("Michael", dictionary[nameKey]);
+        }
+
+        [Fact]
+        public void ReplacingExistingItem()
+        {
+            // Arrange
+            var nameKey = "Name";
+            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+            dictionary.Add(nameKey, "Mike");
+            var operation = new Operation("replace", $"/{nameKey}", from: null);
+            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+
+            // Act
+            patchDictionaryObject.Replace("James");
+
+            // Assert
+            Assert.Equal(1, dictionary.Count);
+            Assert.Equal("James", dictionary[nameKey]);
+        }
+
+        [Fact]
+        public void Replace_NonExistingKey_FailsWithException()
+        {
+            // Arrange
+            var nameKey = "Name";
+            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+            var operation = new Operation("replace", $"/{nameKey}", from: null);
+            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+
+            // Act & Assert
+            var exception = Assert.Throws<JsonPatchException>(() =>
+            {
+                patchDictionaryObject.Replace("Mike");
+            });
+
+            Assert.Equal(
+                $"For operation '{operation.op}', the target location specified by path '{operation.path}' was not found.",
+                exception.Message);
         }
 
         [Fact]
@@ -107,51 +150,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
 
         [Fact]
-        public void ReplacingExistingItem()
-        {
-            // Arrange
-            var nameKey = "Name";
-            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            dictionary.Add(nameKey, "Mike");
-            var operation = new Operation("replace", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
-
-            // Act
-            patchDictionaryObject.Replace("James");
-
-            // Assert
-            Assert.Equal(1, dictionary.Count);
-            Assert.Equal("James", dictionary[nameKey]);
-        }
-
-        [Fact]
-        public void Replace_NonExistingKey_FailsWithException()
-        {
-            // Arrange
-            var nameKey = "Name";
-            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            var operation = new Operation("replace", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
-
-            // Act & Assert
-            var exception = Assert.Throws<JsonPatchException>(() =>
-            {
-                patchDictionaryObject.Replace("Mike");
-            });
-
-            Assert.Equal(
-                $"For operation '{operation.op}', the target location specified by path '{operation.path}' was not found.",
-                exception.Message);
-        }
-
-        [Fact]
         public void Remove_NonExistingKey_FailsWithException()
         {
             // Arrange
-            var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            var operation = new Operation("remove", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var operation = new Operation("remove", "/Name", from: null);
+            var patchDictionaryObject = new PatchDictionaryObject(dictionary, "Name", operation);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
@@ -162,23 +166,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(
                 $"For operation '{operation.op}', the target location specified by path '{operation.path}' was not found.",
                 exception.Message);
-        }
-
-        [Fact]
-        public void Remove_RemovesFromDictionary()
-        {
-            // Arrange
-            var nameKey = "Name";
-            var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
-            dictionary[nameKey] = "James";
-            var operation = new Operation("remove", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
-
-            // Act
-            patchDictionaryObject.Remove();
-
-            //Assert
-            Assert.Equal(0, dictionary.Count);
         }
     }
 }
