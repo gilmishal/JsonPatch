@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         public void Add(object value)
         {
-            // As per JsonPatch spec, if a key already exists Adding should replace the existing value
+            // As per JsonPatch spec, if a key already exists, adding should replace the existing value
             _dictionary[_propertyName] = value;
         }
 
@@ -67,7 +67,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             if (!_dictionary.Contains(_propertyName))
             {
-                throw new JsonPatchException(new JsonPatchError(_dictionary, _operation, Resources.FormatTargetLocationNotFound(_operation.op, _operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _dictionary,
+                    _operation,
+                    Resources.FormatTargetLocationNotFound(_operation.op, _operation.path)));
             }
         }
     }

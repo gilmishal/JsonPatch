@@ -1,12 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                     }
                     else
                     {
-                        // Get property name, respecting JsonProperty attribute                       
+                        // Get property name, respecting JsonProperty attribute
                         return GetPropertyNameFromMemberExpression(memberExpression);
                     }
                 case ExpressionType.Parameter:
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         private static string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
         {
             // if there's a JsonProperty attribute, we must return the PropertyName
-            // from the attribute rather than the member name 
+            // from the attribute rather than the member name
             var jsonPropertyAttribute =
                 memberExpression.Member.GetCustomAttribute(
                 typeof(JsonPropertyAttribute), true);
