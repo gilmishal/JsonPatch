@@ -1771,7 +1771,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
         private class Class8
         {
-            public IDictionary<string, Customer> DictionaryOfGuidToCustomer { get; } = new Dictionary<string, Customer>();
+            public IDictionary<string, Customer> DictionaryOfStringToCustomer { get; } = new Dictionary<string, Customer>();
         }
 
         [Fact]
@@ -1783,17 +1783,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             var key2 = "key2";
             var value2 = new Customer() { Name = "Mike" };
             var model = new Class8();
-            model.DictionaryOfGuidToCustomer[key1] = value1;
-            model.DictionaryOfGuidToCustomer[key2] = value2;
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
             var patchDocument = new JsonPatchDocument();
-            patchDocument.Replace($"/DictionaryOfGuidToCustomer/{key1}/Name", "James");
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
 
             // Act
             patchDocument.ApplyTo(model);
 
             // Assert
-            Assert.Equal(2, model.DictionaryOfGuidToCustomer.Count);
-            var actualValue1 = model.DictionaryOfGuidToCustomer[key1];
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
             Assert.NotNull(actualValue1);
             Assert.Equal("James", actualValue1.Name);
         }
@@ -1807,10 +1807,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             var key2 = "key2";
             var value2 = new Customer() { Name = "Mike" };
             var model = new Class8();
-            model.DictionaryOfGuidToCustomer[key1] = value1;
-            model.DictionaryOfGuidToCustomer[key2] = value2;
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
             var patchDocument = new JsonPatchDocument();
-            patchDocument.Replace($"/DictionaryOfGuidToCustomer/{key1}/Name", "James");
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
             var serialized = JsonConvert.SerializeObject(patchDocument);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class8>>(serialized);
 
@@ -1818,8 +1818,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             patchDocument.ApplyTo(model);
 
             // Assert
-            Assert.Equal(2, model.DictionaryOfGuidToCustomer.Count);
-            var actualValue1 = model.DictionaryOfGuidToCustomer[key1];
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
             Assert.NotNull(actualValue1);
             Assert.Equal("James", actualValue1.Name);
         }
@@ -1833,17 +1833,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             var key2 = "key2";
             var value2 = new Customer() { Name = "Mike" };
             var model = new Class8();
-            model.DictionaryOfGuidToCustomer[key1] = value1;
-            model.DictionaryOfGuidToCustomer[key2] = value2;
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
             var patchDocument = new JsonPatchDocument();
-            patchDocument.Replace($"/DictionaryOfGuidToCustomer/{key1}/Name", "James");
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Name", "James");
 
             // Act
             patchDocument.ApplyTo(model);
 
             // Assert
-            Assert.Equal(2, model.DictionaryOfGuidToCustomer.Count);
-            var actualValue1 = model.DictionaryOfGuidToCustomer[key1];
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
             Assert.NotNull(actualValue1);
             Assert.Equal("James", actualValue1.Name);
         }
@@ -1857,10 +1857,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             var key2 = "key2";
             var value2 = new Customer() { Name = "Mike", Address = new Address { City = "Seattle" } };
             var model = new Class8();
-            model.DictionaryOfGuidToCustomer[key1] = value1;
-            model.DictionaryOfGuidToCustomer[key2] = value2;
+            model.DictionaryOfStringToCustomer[key1] = value1;
+            model.DictionaryOfStringToCustomer[key2] = value2;
             var patchDocument = new JsonPatchDocument();
-            patchDocument.Replace($"/DictionaryOfGuidToCustomer/{key1}/Address/City", "Bellevue");
+            patchDocument.Replace($"/DictionaryOfStringToCustomer/{key1}/Address/City", "Bellevue");
             var serialized = JsonConvert.SerializeObject(patchDocument);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class8>>(serialized);
 
@@ -1868,8 +1868,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             patchDocument.ApplyTo(model);
 
             // Assert
-            Assert.Equal(2, model.DictionaryOfGuidToCustomer.Count);
-            var actualValue1 = model.DictionaryOfGuidToCustomer[key1];
+            Assert.Equal(2, model.DictionaryOfStringToCustomer.Count);
+            var actualValue1 = model.DictionaryOfStringToCustomer[key1];
             Assert.NotNull(actualValue1);
             Assert.Equal("James", actualValue1.Name);
             var address = actualValue1.Address;

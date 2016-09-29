@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -34,22 +37,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         public void Add(object value)
         {
-            object currentValue = null;
-            if (_dictionary.TryGetValue(_key, out currentValue))
-            {
-                if (currentValue != null)
-                {
-                    var currentValueType = currentValue.GetType();
-                    var conversionResult = ConversionResultProvider.ConvertTo(value, currentValueType);
-                    if (conversionResult.CanBeConverted)
-                    {
-                        value = conversionResult.ConvertedInstance;
-                    }
-                }
-            }
-
-            // As per JsonPatch spec, if a key already exists Adding should replace the existing value
-            _dictionary[_key] = value;
+            // As per JsonPatch spec, if a key already exists, adding should replace the existing value
+            _dictionary[_key] = ConvertValue(value);
         }
 
         public object Get()
@@ -70,28 +59,35 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // As per JsonPatch spec, the target location must exist for remove to be successful
             VerifyKeyExists();
 
-            object currentValue = null;
-            if (_dictionary.TryGetValue(_key, out currentValue))
-            {
-                if (currentValue != null)
-                {
-                    var currentValueType = currentValue.GetType();
-                    var conversionResult = ConversionResultProvider.ConvertTo(value, currentValueType);
-                    if (conversionResult.CanBeConverted)
-                    {
-                        value = conversionResult.ConvertedInstance;
-                    }
-                }
-            }
-            _dictionary[_key] = value;
+            _dictionary[_key] = ConvertValue(value);
         }
 
         private void VerifyKeyExists()
         {
             if (!_dictionary.ContainsKey(_key))
             {
-                throw new JsonPatchException(new JsonPatchError(_dictionary, _operation, Resources.FormatTargetLocationNotFound(_operation.op, _operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _dictionary,
+                    _operation,
+                    Resources.FormatTargetLocationNotFound(_operation.op, _operation.path)));
             }
+        }
+
+        private object ConvertValue(object newValue)
+        {
+            object existingValue = null;
+            if (_dictionary.TryGetValue(_key, out existingValue))
+            {
+                if (existingValue != null)
+                {
+                    var conversionResult = ConversionResultProvider.ConvertTo(newValue, existingValue.GetType());
+                    if (conversionResult.CanBeConverted)
+                    {
+                        return conversionResult.ConvertedInstance;
+                    }
+                }
+            }
+            return newValue;
         }
     }
 }

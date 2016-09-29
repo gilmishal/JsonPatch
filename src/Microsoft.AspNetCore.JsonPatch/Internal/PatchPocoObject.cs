@@ -37,35 +37,25 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         public void Add(object value)
         {
-            if (!_property.Writable)
-            {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatCannotUpdateProperty(_operation.path)));
-            }
-
-            var conversionResult = ConversionResultProvider.ConvertTo(value, _property.PropertyType);
-            if (!conversionResult.CanBeConverted)
-            {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatInvalidValueForProperty(value, _operation.path)));
-            }
-
-            _property.ValueProvider.SetValue(_targetObject, conversionResult.ConvertedInstance);
+            EnsureWritableProperty();
+            _property.ValueProvider.SetValue(_targetObject, ConvertValue(value));
         }
 
         public object Get()
         {
             if (!_property.Readable)
             {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatCannotReadProperty(_operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _targetObject,
+                    _operation,
+                    Resources.FormatCannotReadProperty(_operation.path)));
             }
             return _property.ValueProvider.GetValue(_targetObject);
         }
 
         public void Remove()
         {
-            if (!_property.Writable)
-            {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatCannotUpdateProperty(_operation.path)));
-            }
+            EnsureWritableProperty();
 
             // setting the value to "null" will use the default value in case of value types, and
             // null in case of reference types
@@ -79,17 +69,32 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         public void Replace(object value)
         {
+            EnsureWritableProperty();
+            _property.ValueProvider.SetValue(_targetObject, ConvertValue(value));
+        }
+
+        private void EnsureWritableProperty()
+        {
             if (!_property.Writable)
             {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatCannotUpdateProperty(_operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _targetObject,
+                    _operation,
+                    Resources.FormatCannotUpdateProperty(_operation.path)));
             }
+        }
 
+        private object ConvertValue(object value)
+        {
             var conversionResult = ConversionResultProvider.ConvertTo(value, _property.PropertyType);
             if (!conversionResult.CanBeConverted)
             {
-                throw new JsonPatchException(new JsonPatchError(_targetObject, _operation, Resources.FormatInvalidValueForProperty(value, _operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _targetObject,
+                    _operation,
+                    Resources.FormatInvalidValueForProperty(value, _operation.path)));
             }
-            _property.ValueProvider.SetValue(_targetObject, conversionResult.ConvertedInstance);
+            return conversionResult.ConvertedInstance;
         }
     }
 }

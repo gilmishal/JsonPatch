@@ -41,13 +41,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var _listType = _list.GetType();
             if (_listType.IsArray)
             {
-                throw new JsonPatchException(new JsonPatchError(_list, _operation, Resources.FormatPatchNotSupportedForArrays(_listType.FullName)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _list,
+                    _operation,
+                    Resources.FormatPatchNotSupportedForArrays(_listType.FullName)));
             }
 
             var genericList = ClosedGenericMatcher.ExtractGenericInterface(_listType, typeof(IList<>));
             if (genericList == null)
             {
-                throw new JsonPatchException(new JsonPatchError(_list, _operation, Resources.FormatPatchNotSupportedForNonGenericLists(_listType.FullName)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _list,
+                    _operation,
+                    Resources.FormatPatchNotSupportedForNonGenericLists(_listType.FullName)));
             }
             else
             {
@@ -57,11 +63,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             _positionInfo = GetPositionInfo();
             if (_positionInfo.Type == PositionType.Invalid)
             {
-                throw new JsonPatchException(new JsonPatchError(_list, _operation, Resources.FormatInvalidPathForArrayProperty(_operation.op, _operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _list,
+                    _operation,
+                    Resources.FormatInvalidPathForArrayProperty(_operation.op, _operation.path)));
             }
             else if (_positionInfo.Type == PositionType.OutOfBounds)
             {
-                throw new JsonPatchException(new JsonPatchError(_list, _operation, Resources.FormatInvalidIndexForArrayProperty(_operation.op, _operation.path)));
+                throw new JsonPatchException(new JsonPatchError(
+                    _list,
+                    _operation,
+                    Resources.FormatInvalidIndexForArrayProperty(_operation.op, _operation.path)));
             }
         }
 
@@ -162,9 +174,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private enum PositionType
         {
-            Index,
-            EndOfList,
-            Invalid,
+            Index, // valid index
+            EndOfList, // '-'
+            Invalid, // Ex: not an integer
             OutOfBounds
         }
     }

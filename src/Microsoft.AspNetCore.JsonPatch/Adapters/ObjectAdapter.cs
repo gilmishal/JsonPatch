@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             string path,
             object value,
             object objectToApplyTo,
-            Operation operationToReport)
+            Operation operation)
         {
             if (path == null)
             {
@@ -136,19 +136,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            if (operationToReport == null)
+            if (operation == null)
             {
-                throw new ArgumentNullException(nameof(operationToReport));
+                throw new ArgumentNullException(nameof(operation));
             }
+
+            var context = new JsonPatchContext(path, objectToApplyTo, operation, ContractResolver);
 
             try
             {
-                var patchObject = ObjectTreeAnalyzer.Analyze(
-                    objectToApplyTo,
-                    path,
-                    ContractResolver,
-                    operationToReport);
-
+                var patchObject = ObjectVisitor.Visit(context);
                 patchObject.Add(value);
             }
             catch (JsonPatchException exception)
@@ -247,7 +244,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             Remove(operation.path, objectToApplyTo, operation);
         }
 
-
         /// <summary>
         /// Remove is used by various operations (eg: remove, move, ...), yet through different operations;
         /// This method allows code reuse yet reporting the correct operation on error.  The return value
@@ -257,14 +253,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// </summary>
         private void Remove(string path, object objectToApplyTo, Operation operationToReport)
         {
+            var context = new JsonPatchContext(path, objectToApplyTo, operationToReport, ContractResolver);
+
             try
             {
-                var patchObject = ObjectTreeAnalyzer.Analyze(
-                    objectToApplyTo,
-                    path,
-                    ContractResolver,
-                    operationToReport);
-
+                var patchObject = ObjectVisitor.Visit(context);
                 patchObject.Remove();
             }
             catch (JsonPatchException exception)
@@ -312,14 +305,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
+            var context = new JsonPatchContext(operation.path, objectToApplyTo, operation, ContractResolver);
+
             try
             {
-                var patchObject = ObjectTreeAnalyzer.Analyze(
-                    objectToApplyTo,
-                    operation.path,
-                    ContractResolver,
-                    operation);
-
+                var patchObject = ObjectVisitor.Visit(context);
                 patchObject.Replace(operation.value);
             }
             catch (JsonPatchException exception)
@@ -387,18 +377,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         /// <summary>
         /// Method is used by Copy and Move to avoid duplicate code
         /// </summary>
-        /// <param name="location">Location where value should be</param>
+        /// <param name="fromLocation">Location where value should be</param>
         /// <param name="objectToGetValueFrom">Object to inspect for the desired value</param>
-        /// <param name="operationToReport">Operation to report in case of an error</param>
+        /// <param name="operation">Operation to report in case of an error</param>
         /// <returns>GetValueResult containing value and a bool signifying a possible error</returns>
         private GetValueResult GetValueAtLocation(
-            string location,
+            string fromLocation,
             object objectToGetValueFrom,
-            Operation operationToReport)
+            Operation operation)
         {
-            if (location == null)
+            if (fromLocation == null)
             {
-                throw new ArgumentNullException(nameof(location));
+                throw new ArgumentNullException(nameof(fromLocation));
             }
 
             if (objectToGetValueFrom == null)
@@ -406,21 +396,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToGetValueFrom));
             }
 
-            if (operationToReport == null)
+            if (operation == null)
             {
-                throw new ArgumentNullException(nameof(operationToReport));
+                throw new ArgumentNullException(nameof(operation));
             }
 
             object value = null;
             var hasError = false;
+            var context = new JsonPatchContext(fromLocation, objectToGetValueFrom, operation, ContractResolver);
             try
             {
-                var patchObject = ObjectTreeAnalyzer.Analyze(
-                    objectToGetValueFrom,
-                    location,
-                    ContractResolver,
-                    operationToReport);
-
+                var patchObject = ObjectVisitor.Visit(context);
                 value = patchObject.Get();
             }
             catch (JsonPatchException exception)

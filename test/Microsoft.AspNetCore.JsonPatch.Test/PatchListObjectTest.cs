@@ -126,11 +126,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(expected, targetObject);
         }
 
-        [Fact(Skip = "probably should be done at a higher level where we provided raw serialization format")]
-        public void Add_DefaultsToTheListType_IfNotDataProvided()
-        {
-        }
-
         [Fact]
         public void Add_NullObject_ToReferenceTypeListWorks()
         {
