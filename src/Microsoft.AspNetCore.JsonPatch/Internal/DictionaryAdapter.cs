@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     //todo 1: behavior when the instance is a readonly dictionary
     //todo 2: behavior when the instance is a custom dictionary not implementing IDictionary
-    public class PatchDictionaryObject : IPatchObject
+    public class DictionaryAdapter : IAdapter
     {
         private readonly string _propertyName;
         private readonly Operation _operation;
         private readonly IDictionary _dictionary;
 
-        public PatchDictionaryObject(IDictionary dictionary, string propertyName, Operation operation)
+        public DictionaryAdapter(IDictionary dictionary, string propertyName, Operation operation)
         {
             if (dictionary == null)
             {

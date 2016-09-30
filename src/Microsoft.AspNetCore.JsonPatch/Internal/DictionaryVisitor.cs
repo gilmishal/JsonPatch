@@ -1,34 +1,33 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.Dynamic;
+using System.Collections;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class ExpandoObjectVisitor : IVisitor
+    public class DictionaryVisitor : IVisitor
     {
         public IAdapter GetAdapter(OperationContext context)
         {
-            var expandoObject = context.TargetObject as ExpandoObject;
-            if (expandoObject == null)
+            var dictionary = context.TargetObject as IDictionary;
+            if (dictionary == null)
             {
                 return null;
             }
 
-            var _dictionary = (IDictionary<string, object>)context.TargetObject;
+            var currentSegment = context.CurrentSegment.ToString();
 
             // Example: /USStatesProperty/WA
             if (context.CurrentSegment.IsFinal)
             {
-                return new ExpandoObjectAdapter((ExpandoObject)context.TargetObject, context.CurrentSegment, context.Operation);
+                return new DictionaryAdapter(dictionary, currentSegment, context.Operation);
             }
-            else if (_dictionary.ContainsCaseInsensitiveKey(context.CurrentSegment))
+            else if (dictionary.Contains(currentSegment))
             {
                 // Example path: "/Customers/101/Address/Zipcode" and
                 // let's say the current path segment is "101"
-                var newTargetObject = _dictionary.GetValueForCaseInsensitiveKey(context.CurrentSegment);
+                var newTargetObject = dictionary[currentSegment];
                 context.SetNewTargetObject(newTargetObject);
                 return ObjectVisitor.GetAdapter(context);
             }

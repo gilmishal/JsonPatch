@@ -10,7 +10,7 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class PatchListObject : IPatchObject
+    public class ListAdapter : IAdapter
     {
         private readonly IList _list;
         private readonly string _pathSegment;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         private readonly Operation _operation;
         private readonly PositionInfo _positionInfo;
 
-        public PatchListObject(IList targetObject, string pathSegment, Operation operation)
+        public ListAdapter(IList targetObject, string pathSegment, Operation operation)
         {
             if (targetObject == null)
             {

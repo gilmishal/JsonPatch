@@ -9,13 +9,13 @@ using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class PatchPocoObject : IPatchObject
+    public class PocoAdapter : IAdapter
     {
         private readonly Operation _operation;
         private readonly JsonProperty _property;
         private readonly object _targetObject;
 
-        public PatchPocoObject(object targetObject, JsonProperty property, Operation operation)
+        public PocoAdapter(object targetObject, JsonProperty property, Operation operation)
         {
             if (targetObject == null)
             {

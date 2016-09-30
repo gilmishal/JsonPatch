@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class PatchListObjectTest
+    public class ListAdapterTest
     {
         [Fact]
         public void Patch_OnArrayObject_FailsWithException()
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
-                new PatchListObject(targetObject, "0", new Operation("add", "/numbers", from: null));
+                new ListAdapter(targetObject, "0", new Operation("add", "/numbers", from: null));
             });
 
             Assert.Equal(
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
-                new PatchListObject(targetObject, "0", new Operation("add", "/numbers", from: null));
+                new ListAdapter(targetObject, "0", new Operation("add", "/numbers", from: null));
             });
 
             Assert.Equal(
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
-                new PatchListObject(targetObject, position, operation);
+                new ListAdapter(targetObject, position, operation);
             });
 
             Assert.Equal(
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
-                new PatchListObject(targetObject, position, operation);
+                new ListAdapter(targetObject, position, operation);
             });
 
             Assert.Equal(
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(expected, targetObject);
         }
 
-        private PatchListObject GetpathListObject(
+        private ListAdapter GetpathListObject(
             IList targetObject,
             string pathSegment,
             Operation operation = null)
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             {
                 operation = new Operation("add", "/numbers", from: null);
             }
-            return new PatchListObject(targetObject, pathSegment, operation);
+            return new ListAdapter(targetObject, pathSegment, operation);
         }
     }
 }

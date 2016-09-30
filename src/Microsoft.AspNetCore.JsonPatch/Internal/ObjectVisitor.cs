@@ -1,61 +1,39 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections;
-using System.Dynamic;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public static class ObjectVisitor
     {
-        public static IPatchObject Visit(OperationContext context)
+        private static readonly List<IVisitor> visitors;
+
+        static ObjectVisitor()
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            visitors = new List<IVisitor>();
 
-            if (context.TargetObject == null)
-            {
-                throw new JsonPatchException(new JsonPatchError(
-                        context.TargetObject,
-                        context.Operation,
-                        Resources.FormatTargetLocationNotFound(context.Operation.op, context.Operation.path)));
-            }
+            // NOTE: The order here is intentional
+            visitors.Add(new ExpandoObjectVisitor());
+            visitors.Add(new DictionaryVisitor());
+            visitors.Add(new ListVisitor());
+            visitors.Add(new PocoVisitor());
+        }
 
-            ExpandoObject expandoObject = null;
-            IDictionary dictionary = null;
-            IList list = null;
-            IPatchObject patchObject = null;
-
-            if ((expandoObject = context.TargetObject as ExpandoObject) != null)
+        public static IAdapter GetAdapter(OperationContext context)
+        {
+            while (context.MoveToNextPathSegment())
             {
-                patchObject = ExpandoObjectVisitor.Visit(context);
+                for (var i = 0; i < visitors.Count; i++)
+                {
+                    IAdapter adapter;
+                    if ((adapter = visitors[i].GetAdapter(context)) != null)
+                    {
+                        return adapter;
+                    }
+                }
             }
-            else if ((dictionary = context.TargetObject as IDictionary) != null)
-            {
-                patchObject = DictionaryObjectVisitor.Visit(context);
-            }
-            else if ((list = context.TargetObject as IList) != null)
-            {
-                patchObject = ListObjectVisitor.Visit(context);
-            }
-            else
-            {
-                patchObject = PocoVisitor.Visit(context);
-            }
-
-            if (patchObject == null)
-            {
-                throw new JsonPatchException(new JsonPatchError(
-                    context.TargetObject,
-                    context.Operation,
-                    Resources.FormatCannotPerformOperation(context.Operation.op, context.Operation.path)));
-            }
-
-            return patchObject;
+            return null;
         }
     }
 }

@@ -3,43 +3,41 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public static class PocoVisitor
+    public class PocoVisitor : IVisitor
     {
-        public static IPatchObject Visit(OperationContext context)
+        public IAdapter GetAdapter(OperationContext context)
         {
-            PathSegment pathSegment;
-            if (!context.TryGetSegment(out pathSegment))
-            {
-                return null;
-            }
-
             var jsonObjectContract = context.ContractResolver.ResolveContract(context.TargetObject.GetType()) as JsonObjectContract;
             if (jsonObjectContract != null)
             {
                 var pocoProperty = jsonObjectContract
                     .Properties
-                    .FirstOrDefault(p => string.Equals(p.PropertyName, pathSegment, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(p => string.Equals(p.PropertyName, context.CurrentSegment, StringComparison.OrdinalIgnoreCase));
 
                 if (pocoProperty != null)
                 {
-                    if (pathSegment.IsFinal)
+                    if (context.CurrentSegment.IsFinal)
                     {
-                        return new PatchPocoObject(context.TargetObject, pocoProperty, context.Operation);
+                        return new PocoAdapter(context.TargetObject, pocoProperty, context.Operation);
                     }
                     else
                     {
                         var newTargetObject = pocoProperty.ValueProvider.GetValue(context.TargetObject);
                         context.SetNewTargetObject(newTargetObject);
-                        return ObjectVisitor.Visit(context);
+                        return ObjectVisitor.GetAdapter(context);
                     }
                 }
             }
 
-            return null;
+            throw new JsonPatchException(new JsonPatchError(
+                            context.TargetObject,
+                            context.Operation,
+                            Resources.FormatCannotPerformOperation(context.Operation.op, context.Operation.path)));
         }
     }
 }

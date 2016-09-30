@@ -31,18 +31,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public IContractResolver ContractResolver { get; }
         public Operation Operation { get; }
         public object TargetObject { get; private set; }
+        public PathSegment CurrentSegment { get; private set; }
 
-        public bool TryGetSegment(out PathSegment pathSegment)
+        public bool MoveToNextPathSegment()
         {
             if (_index + 1 < _pathSegments.Length)
             {
                 _index++;
 
                 var isFinalSegment = _index == _pathSegments.Length - 1;
-                pathSegment = new PathSegment(_pathSegments[_index], isFinalSegment);
+                CurrentSegment = new PathSegment(_pathSegments[_index], isFinalSegment);
                 return true;
             }
-            pathSegment = default(PathSegment);
             return false;
         }
 

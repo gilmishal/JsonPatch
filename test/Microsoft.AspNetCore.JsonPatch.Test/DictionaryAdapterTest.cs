@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class PatchDictionaryObjectTest
+    public class DictionaryAdapterTest
     {
         [Fact]
         public void Add_KeyWhichAlreadyExists_ReplacesExistingValue()
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             dictionary[nameKey] = "Mike";
             var operation = new Operation("add", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Add("James");
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Arrange
-            patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Add("Michael");
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var operation = new Operation("add", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Add("James");
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey.ToUpper(), operation);
+            patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey.ToUpper(), operation);
             var value = patchDictionaryObject.Get();
             Assert.Null(value);
         }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var operation = new Operation("add", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Add("James");
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
             var value = patchDictionaryObject.Get();
             Assert.Equal(value, "James");
         }
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             var operation = new Operation("add", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Add("James");
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey.ToUpper(), operation);
+            patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey.ToUpper(), operation);
             var value = patchDictionaryObject.Get();
             Assert.Equal(value, "James");
         }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             dictionary.Add(nameKey, "Mike");
             var operation = new Operation("replace", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Replace("James");
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var operation = new Operation("replace", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var operation = new Operation("remove", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             dictionary[nameKey] = "James";
             var operation = new Operation("remove", $"/{nameKey}", from: null);
-            var patchDictionaryObject = new PatchDictionaryObject(dictionary, nameKey, operation);
+            var patchDictionaryObject = new DictionaryAdapter(dictionary, nameKey, operation);
 
             // Act
             patchDictionaryObject.Remove();

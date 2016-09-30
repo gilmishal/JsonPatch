@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.JsonPatch.Operations;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class PatchExpandoObject : IPatchObject
+    public class ExpandoObjectAdapter : IAdapter
     {
         private readonly Operation _operation;
         private readonly IDictionary<string, object> _dictionary;
         private readonly string _key;
 
-        public PatchExpandoObject(ExpandoObject targetObject, string propertyName, Operation operation)
+        public ExpandoObjectAdapter(ExpandoObject targetObject, string propertyName, Operation operation)
         {
             if (targetObject == null)
             {

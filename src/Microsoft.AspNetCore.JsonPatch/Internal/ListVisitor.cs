@@ -6,28 +6,24 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public static class ListObjectVisitor
+    public class ListVisitor : IVisitor
     {
-        public static IPatchObject Visit(OperationContext context)
+        public IAdapter GetAdapter(OperationContext context)
         {
-            // Example: Let's say the paths are "/Countries/0" or "/Countries/-" and we are at 'list' target object
-            // returned by 'Countries'. We are trying to get '0' or '-' in this case.
-            PathSegment pathSegment;
-            if (!context.TryGetSegment(out pathSegment))
+            var list = context.TargetObject as IList;
+            if (list == null)
             {
                 return null;
             }
 
-            var list = (IList)context.TargetObject;
-
-            if (pathSegment.IsFinal)
+            if (context.CurrentSegment.IsFinal)
             {
-                return new PatchListObject(list, pathSegment, context.Operation);
+                return new ListAdapter(list, context.CurrentSegment, context.Operation);
             }
             else
             {
                 int index = -1;
-                if (!int.TryParse(pathSegment, out index))
+                if (!int.TryParse(context.CurrentSegment, out index))
                 {
                     throw new JsonPatchException(new JsonPatchError(
                         context.TargetObject,
@@ -46,7 +42,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 // Example paths: "/Countries/0/States/0", "/Countries/0/States/-"
                 var newTargetObject = list[index];
                 context.SetNewTargetObject(newTargetObject);
-                return ObjectVisitor.Visit(context);
+                return ObjectVisitor.GetAdapter(context);
             }
         }
     }

@@ -145,8 +145,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             try
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Add(value);
+                var adapter = ObjectVisitor.GetAdapter(context);
+                adapter.Add(value);
             }
             catch (JsonPatchException exception)
             {
@@ -257,8 +257,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             try
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Remove();
+                var adapter = ObjectVisitor.GetAdapter(context);
+                adapter.Remove();
             }
             catch (JsonPatchException exception)
             {
@@ -309,8 +309,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             try
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Replace(operation.value);
+                var adapter = ObjectVisitor.GetAdapter(context);
+                adapter.Replace(operation.value);
             }
             catch (JsonPatchException exception)
             {
@@ -406,8 +406,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var context = new OperationContext(fromLocation, objectToGetValueFrom, operation, ContractResolver);
             try
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                value = patchObject.Get();
+                var adapter = ObjectVisitor.GetAdapter(context);
+                value = adapter.Get();
             }
             catch (JsonPatchException exception)
             {

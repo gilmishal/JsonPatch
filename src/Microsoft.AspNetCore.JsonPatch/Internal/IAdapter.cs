@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public interface IPatchObject
+    public interface IAdapter
     {
         object Get();
 
