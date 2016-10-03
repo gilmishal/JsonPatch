@@ -4,89 +4,58 @@
 using System;
 using System.Collections;
 using System.Dynamic;
-using Newtonsoft.Json.Serialization;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class ObjectVisitor
+    public static class ObjectVisitor
     {
-        public ObjectVisitor(ParsedPath path, IContractResolver contractResolver)
+        public static IPatchObject Visit(OperationContext context)
         {
-            Path = path;
-            ContractResolver = contractResolver;
-        }
-
-        public IContractResolver ContractResolver { get; }
-
-        public ParsedPath Path { get; }
-
-        public bool Visit(ref object target, out IAdapter adapter)
-        {
-            if (target == null)
+            if (context == null)
             {
-                adapter = null;
-                return false;
+                throw new ArgumentNullException(nameof(context));
             }
 
-            adapter = SelectAdapater(target);
-
-            for (var i = 0; i < Path.Segments.Count - 1; i++)
+            if (context.TargetObject == null)
             {
-                object next;
-                if (!adapter.TryTraverse(target, Path.Segments[i], ContractResolver, out next))
-                {
-                    adapter = null;
-                    return false;
-                }
-
-                adapter = SelectAdapater(target);
+                throw new JsonPatchException(new JsonPatchError(
+                        context.TargetObject,
+                        context.Operation,
+                        Resources.FormatTargetLocationNotFound(context.Operation.op, context.Operation.path)));
             }
 
-            return true;
-        }
+            ExpandoObject expandoObject = null;
+            IDictionary dictionary = null;
+            IList list = null;
+            IPatchObject patchObject = null;
 
-        private IAdapter SelectAdapater(object @object)
-        {
-            if (@object is ExpandoObject)
+            if ((expandoObject = context.TargetObject as ExpandoObject) != null)
             {
-                return new ExpandoObjectAdapter();
+                patchObject = ExpandoObjectVisitor.Visit(context);
             }
-            else if (@object is IDictionary)
+            else if ((dictionary = context.TargetObject as IDictionary) != null)
             {
-                return new DictionaryAdapter();
+                patchObject = DictionaryObjectVisitor.Visit(context);
             }
-            else if (@object is IList)
+            else if ((list = context.TargetObject as IList) != null)
             {
-                return new ListAdapter();
+                patchObject = ListObjectVisitor.Visit(context);
             }
             else
             {
-                return new PocoAdapter();
+                patchObject = PocoVisitor.Visit(context);
             }
-        }
 
-        private class ExpandoObjectAdapter : IAdapter
-        {
-            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
+            if (patchObject == null)
             {
-                throw new NotImplementedException();
+                throw new JsonPatchException(new JsonPatchError(
+                    context.TargetObject,
+                    context.Operation,
+                    Resources.FormatCannotPerformOperation(context.Operation.op, context.Operation.path)));
             }
-        }
 
-        private class ListAdapter : IAdapter
-        {
-            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class PocoAdapter : IAdapter
-        {
-            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
-            {
-                throw new NotImplementedException();
-            }
+            return patchObject;
         }
     }
 }

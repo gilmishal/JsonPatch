@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,14 +11,14 @@ using Newtonsoft.Json.Serialization;
 namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
     /// <inheritdoc />
-    public class ObjectAdapter : IObjectAdapter
+    public class ObjectAdapter2 : IObjectAdapter
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ObjectAdapter"/>.
         /// </summary>
         /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
         /// <param name="logErrorAction">The <see cref="Action"/> for logging <see cref="JsonPatchError"/>.</param>
-        public ObjectAdapter(
+        public ObjectAdapter2(
             IContractResolver contractResolver,
             Action<JsonPatchError> logErrorAction)
         {
@@ -141,24 +141,26 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            var context = new OperationContext(path, objectToApplyTo, operation, ContractResolver);
+            var parsedPath = new ParsedPath(path);
+            var visitor = new ObjectVisitor2(parsedPath, ContractResolver);
 
-            try
+            IAdapter adapter;
+            var target = objectToApplyTo;
+            if (!visitor.Visit(ref target, out adapter))
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Add(value);
+                var error = CreatePathNotFoundError(objectToApplyTo, path, operation);
+                ReportError(error);
+                return;
             }
-            catch (JsonPatchException exception)
+
+            string message;
+            if (!adapter.TryAdd(target, parsedPath.LastSegment, ContractResolver, value, out message))
             {
-                if (LogErrorAction != null)
-                {
-                    LogErrorAction(new JsonPatchError(exception.AffectedObject, exception.FailedOperation, exception.Message));
-                }
-                else
-                {
-                    throw;
-                }
+                var error = CreateOperationFailedError(objectToApplyTo, path, operation, message);
+                ReportError(error);
+                return;
             }
+
         }
 
         /// <summary>
@@ -255,21 +257,25 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         {
             var context = new OperationContext(path, objectToApplyTo, operationToReport, ContractResolver);
 
-            try
+            var parsedPath = new ParsedPath(path);
+            var visitor = new ObjectVisitor2(parsedPath, ContractResolver);
+
+            IAdapter adapter;
+            var target = objectToApplyTo;
+
+            if (!visitor.Visit(ref target, out adapter))
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Remove();
+                var error = CreatePathNotFoundError(objectToApplyTo, path, operationToReport);
+                ReportError(error);
+                return;
             }
-            catch (JsonPatchException exception)
+
+            string message;
+            if (!adapter.TryRemove(target, parsedPath.LastSegment, ContractResolver, out message))
             {
-                if (LogErrorAction != null)
-                {
-                    LogErrorAction(new JsonPatchError(exception.AffectedObject, exception.FailedOperation, exception.Message));
-                }
-                else
-                {
-                    throw;
-                }
+                var error = CreateOperationFailedError(objectToApplyTo, path, operationToReport, message);
+                ReportError(error);
+                return;
             }
         }
 
@@ -305,23 +311,24 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            var context = new OperationContext(operation.path, objectToApplyTo, operation, ContractResolver);
+            var parsedPath = new ParsedPath(operation.path);
+            var visitor = new ObjectVisitor2(parsedPath, ContractResolver);
 
-            try
+            IAdapter adapter;
+            var target = objectToApplyTo;
+            if (!visitor.Visit(ref target, out adapter))
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Replace(operation.value);
+                var error = CreatePathNotFoundError(objectToApplyTo, operation.path, operation);
+                ReportError(error);
+                return;
             }
-            catch (JsonPatchException exception)
+
+            string message;
+            if (!adapter.TryReplace(target, parsedPath.LastSegment, ContractResolver, operation.value, out message))
             {
-                if (LogErrorAction != null)
-                {
-                    LogErrorAction(new JsonPatchError(exception.AffectedObject, exception.FailedOperation, exception.Message));
-                }
-                else
-                {
-                    throw;
-                }
+                var error = CreateOperationFailedError(objectToApplyTo, operation.path, operation, message);
+                ReportError(error);
+                return;
             }
         }
 
@@ -403,26 +410,56 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             object value = null;
             var hasError = false;
-            var context = new OperationContext(fromLocation, objectToGetValueFrom, operation, ContractResolver);
-            try
+
+            var parsedPath = new ParsedPath(fromLocation);
+            var visitor = new ObjectVisitor2(parsedPath, ContractResolver);
+
+            IAdapter adapter;
+            var target = objectToGetValueFrom;
+            if (!visitor.Visit(ref target, out adapter))
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                value = patchObject.Get();
+                var error = CreatePathNotFoundError(objectToGetValueFrom, fromLocation, operation);
+                ReportError(error);
+                hasError = true;
             }
-            catch (JsonPatchException exception)
+
+            string message;
+            if (!adapter.TryGet(target, parsedPath.LastSegment, ContractResolver, out value, out message))
             {
-                if (LogErrorAction != null)
-                {
-                    hasError = true;
-                    LogErrorAction(new JsonPatchError(exception.AffectedObject, exception.FailedOperation, exception.Message));
-                }
-                else
-                {
-                    throw;
-                }
+                var error = CreateOperationFailedError(objectToGetValueFrom, fromLocation, operation, message);
+                ReportError(error);
+                hasError = true;
             }
 
             return new GetValueResult(value, hasError);
+        }
+
+        private void ReportError(JsonPatchError error)
+        {
+            if (LogErrorAction != null)
+            {
+                LogErrorAction(error);
+            }
+            else
+            {
+                throw new JsonPatchException(error);
+            }
+        }
+
+        private JsonPatchError CreateOperationFailedError(object @object, string path, Operation operation, string message)
+        {
+            return new JsonPatchError(
+                @object,
+                operation,
+                message ?? Resources.FormatCannotPerformOperation(operation.op, path));
+        }
+
+        private JsonPatchError CreatePathNotFoundError(object @object, string path, Operation operation)
+        {
+            return new JsonPatchError(
+                @object,
+                operation,
+                Resources.FormatTargetLocationNotFound(operation.op, path));
         }
     }
 }

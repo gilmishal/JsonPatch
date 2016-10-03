@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public struct ParsedPath
     {
-        private static readonly string[] Empty;
+        private static readonly string[] Empty = null;
 
         private readonly string[] _segments;
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 throw new ArgumentNullException(nameof(path));
             }
 
-            _segments = path.Split('/');
+            _segments = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
         public string LastSegment
