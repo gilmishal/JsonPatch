@@ -141,24 +141,26 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            var context = new OperationContext(path, objectToApplyTo, operation, ContractResolver);
+            var parsedPath = new ParsedPath(path);
+            var visitor = new ObjectVisitor(parsedPath, ContractResolver);
 
-            try
+            IAdapter adapter;
+            var target = objectToApplyTo;
+            if (!visitor.Visit(ref target, out adapter))
             {
-                var patchObject = ObjectVisitor.Visit(context);
-                patchObject.Add(value);
+                var error = CreatePathNotFoundError(objectToApplyTo, path, operation);
+                ReportError(error);
+                return;
             }
-            catch (JsonPatchException exception)
+
+            string message;
+            if (!adapter.TryAdd(target, parsedPath.LastSegment, ContractResolver, value, out message))
             {
-                if (LogErrorAction != null)
-                {
-                    LogErrorAction(new JsonPatchError(exception.AffectedObject, exception.FailedOperation, exception.Message));
-                }
-                else
-                {
-                    throw;
-                }
+                var error = CreateOperationFailedError(objectToApplyTo, path, operation, message);
+                ReportError(error);
+                return;
             }
+
         }
 
         /// <summary>
@@ -423,6 +425,34 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             }
 
             return new GetValueResult(value, hasError);
+        }
+
+        private void ReportError(JsonPatchError error)
+        {
+            if (LogErrorAction == null)
+            {
+                LogErrorAction(error);
+            }
+            else
+            {
+                throw new JsonPatchException(error);
+            }
+        }
+
+        private JsonPatchError CreateOperationFailedError(object @object, string path, Operation operation, string message)
+        {
+            return new JsonPatchError(
+                @object,
+                operation,
+                message ?? Resources.FormatCannotPerformOperation(operation.op, path));
+        }
+
+        private JsonPatchError CreatePathNotFoundError(object @object, string path, Operation operation)
+        {
+            return new JsonPatchError(
+                @object,
+                operation,
+                Resources.FormatTargetLocationNotFound(operation.op, path));
         }
     }
 }

@@ -4,58 +4,89 @@
 using System;
 using System.Collections;
 using System.Dynamic;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public static class ObjectVisitor
+    public class ObjectVisitor
     {
-        public static IPatchObject Visit(OperationContext context)
+        public ObjectVisitor(ParsedPath path, IContractResolver contractResolver)
         {
-            if (context == null)
+            Path = path;
+            ContractResolver = contractResolver;
+        }
+
+        public IContractResolver ContractResolver { get; }
+
+        public ParsedPath Path { get; }
+
+        public bool Visit(ref object target, out IAdapter adapter)
+        {
+            if (target == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                adapter = null;
+                return false;
             }
 
-            if (context.TargetObject == null)
+            adapter = SelectAdapater(target);
+
+            for (var i = 0; i < Path.Segments.Count - 1; i++)
             {
-                throw new JsonPatchException(new JsonPatchError(
-                        context.TargetObject,
-                        context.Operation,
-                        Resources.FormatTargetLocationNotFound(context.Operation.op, context.Operation.path)));
+                object next;
+                if (!adapter.TryTraverse(target, Path.Segments[i], ContractResolver, out next))
+                {
+                    adapter = null;
+                    return false;
+                }
+
+                adapter = SelectAdapater(target);
             }
 
-            ExpandoObject expandoObject = null;
-            IDictionary dictionary = null;
-            IList list = null;
-            IPatchObject patchObject = null;
+            return true;
+        }
 
-            if ((expandoObject = context.TargetObject as ExpandoObject) != null)
+        private IAdapter SelectAdapater(object @object)
+        {
+            if (@object is ExpandoObject)
             {
-                patchObject = ExpandoObjectVisitor.Visit(context);
+                return new ExpandoObjectAdapter();
             }
-            else if ((dictionary = context.TargetObject as IDictionary) != null)
+            else if (@object is IDictionary)
             {
-                patchObject = DictionaryObjectVisitor.Visit(context);
+                return new DictionaryAdapter();
             }
-            else if ((list = context.TargetObject as IList) != null)
+            else if (@object is IList)
             {
-                patchObject = ListObjectVisitor.Visit(context);
+                return new ListAdapter();
             }
             else
             {
-                patchObject = PocoVisitor.Visit(context);
+                return new PocoAdapter();
             }
+        }
 
-            if (patchObject == null)
+        private class ExpandoObjectAdapter : IAdapter
+        {
+            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
             {
-                throw new JsonPatchException(new JsonPatchError(
-                    context.TargetObject,
-                    context.Operation,
-                    Resources.FormatCannotPerformOperation(context.Operation.op, context.Operation.path)));
+                throw new NotImplementedException();
             }
+        }
 
-            return patchObject;
+        private class ListAdapter : IAdapter
+        {
+            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class PocoAdapter : IAdapter
+        {
+            public bool TryTraverse(object target, string segment, IContractResolver contractResolver, out object value)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
