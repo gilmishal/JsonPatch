@@ -444,10 +444,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
 
 
             //Assert
+            Assert.Single(logger.ErrorMessages);
             Assert.Equal(
                 "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is larger than " +
                     "the array size.",
-                logger.ErrorMessage);
+                logger.ErrorMessages[0]);
 
         }
 

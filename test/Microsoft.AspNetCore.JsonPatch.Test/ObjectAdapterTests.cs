@@ -1733,5 +1733,32 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
             Assert.Equal(0, doc.IntegerValue);
             Assert.Equal(new List<int>() { 1, 2, 3, 5 }, doc.IntegerList);
         }
+
+        [Fact]
+        public void MulipleOperations_FailOnFirstOperationFailure()
+        {
+            // Arrange
+            var doc = new SimpleDTO()
+            {
+                StringProperty = "A"
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Add("/StringProperty", "B");
+            patchDoc.Add("/nonexisting1", "value1");
+            patchDoc.Replace("/nonexisting2", "value2");
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var logger = new TestErrorLogger<SimpleDTO>();
+
+            // Act
+            deserialized.ApplyTo(doc, logger.LogErrorMessage);
+
+            // Assert
+            Assert.Equal("B", doc.StringProperty);
+            Assert.Equal("afasdfsa", logger.ErrorMessage);
+        }
     }
 }
