@@ -55,12 +55,32 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 message);
         }
 
+        [Fact]
+        public void Add_WithIndexSameAsNumberOfElements_Succeeds()
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<string>() { "James", "Mike" };
+            var listAdapter = new ListAdapter();
+            string message = null;
+            var position = targetObject.Count.ToString();
+
+            // Act
+            var addStatus = listAdapter.TryAdd(targetObject, position, resolver.Object, "40", out message);
+
+            // Assert
+            Assert.False(addStatus);
+            Assert.Equal(
+                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
+                message);
+        }
+
         [Theory]
         [InlineData("-1")]
         [InlineData("-2")]
-        [InlineData("2")]
+        //[InlineData("2")]
         [InlineData("3")]
-        public void Patch_WithOutOfBoundsIndex_Fails(string position)
+        public void Add_WithOutOfBoundsIndex_Fails(string position)
         {
             // Arrange
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
