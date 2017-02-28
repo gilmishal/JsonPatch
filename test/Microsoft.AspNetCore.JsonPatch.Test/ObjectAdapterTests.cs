@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Arrange
             var doc = new SimpleDTOWithNullCheck()
             {
-                StringProperty = "A",                
+                StringProperty = "A",
             };
 
             // create patch
@@ -2308,8 +2308,36 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => patchDoc.ApplyTo(doc));
             Assert.Equal(
-                string.Format("The target location specified by path segment '{0}' was not found.", "Age"), 
+                string.Format("The target location specified by path segment '{0}' was not found.", "Age"),
                 exception.Message);
+        }
+
+        class ClassWithNullableProperty
+        {
+            public int? NullableIntegerProperty { get; set; }
+        }
+
+        [Fact]
+        public void AddNull_OnNullableProperty_Succeeds()
+        {
+            // Arrange
+            var doc = new ClassWithNullableProperty()
+            {
+                NullableIntegerProperty = 10
+            };
+
+            // create patch
+            var patchDoc = new JsonPatchDocument<ClassWithNullableProperty>();
+            patchDoc.Add<int?>(o => o.NullableIntegerProperty, null);
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<ClassWithNullableProperty>>(serialized);
+
+            // Act
+            deserialized.ApplyTo(doc);
+
+            // Assert
+            Assert.Null(doc.NullableIntegerProperty);
         }
     }
 }
